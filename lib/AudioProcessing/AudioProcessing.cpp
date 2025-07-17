@@ -512,3 +512,48 @@ float AudioEffects::biquadFilter(float input, float* coeffs, float* state) {
     
     return output;
 }
+
+void AudioEffects::processLimiter(float* buffer, uint16_t size) {
+    // Simple limiter with soft knee
+    const float threshold = 0.95f;
+    const float ratio = 10.0f;
+    const float knee = 0.1f;
+    
+    for (uint16_t i = 0; i < size; i++) {
+        float input = buffer[i];
+        float absInput = abs(input);
+        
+        if (absInput > threshold) {
+            float excess = absInput - threshold;
+            float gainReduction = 1.0f - (excess * (ratio - 1.0f) / ratio);
+            
+            // Soft knee compression
+            if (excess < knee) {
+                float kneeRatio = excess / knee;
+                gainReduction = 1.0f - (kneeRatio * kneeRatio * (excess * (ratio - 1.0f) / ratio));
+            }
+            
+            buffer[i] = input * gainReduction;
+        }
+    }
+}
+
+void AudioEffects::processCompressor(float* buffer, uint16_t size) {
+    // Simple compressor with soft knee
+    const float makeupGain = 1.2f;
+    
+    for (uint16_t i = 0; i < size; i++) {
+        float input = buffer[i];
+        float absInput = abs(input);
+        
+        if (absInput > compThreshold) {
+            float excess = absInput - compThreshold;
+            float gainReduction = 1.0f - (excess * (compRatio - 1.0f) / compRatio);
+            
+            // Apply compression with makeup gain
+            buffer[i] = input * gainReduction * makeupGain;
+        } else {
+            buffer[i] = input * makeupGain;
+        }
+    }
+}
