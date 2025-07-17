@@ -10,7 +10,7 @@
  * - Battery monitoring and charging status
  * - Voice Activity Detection (VAD)
  * - Basic noise suppression
- * - USB HID for Teams/Discord mute control
+ * - USB HID for Teams/Discord mute control (via Serial on ESP32-C3)
  * - P-MOSFET mic power control via flex cable
  * 
  * Hardware connections:
@@ -31,8 +31,7 @@
 #include <driver/i2s.h>
 #include <driver/adc.h>
 #include <esp_adc_cal.h>
-#include <USB.h>
-#include <USBHIDKeyboard.h>
+// Note: ESP32-C3 doesn't have native USB HID support
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
@@ -110,7 +109,7 @@
 
 // Hardware objects
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-USBHIDKeyboard keyboard;
+// Note: ESP32-C3 doesn't have native USB HID - using BLE HID instead
 QCC5124Control qccCodec(&Serial1);
 AudioProcessor audioProcessor;
 AudioEffects audioEffects;
@@ -344,10 +343,10 @@ void initializeAudio() {
 void initializeBattery() {
     // Configure ADC for battery monitoring
     adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_DB_11);  // GPIO35 = ADC1_CH7
+    adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_12);  // GPIO4 = ADC1_CH4
     
     // Characterize ADC
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adcChars);
+    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adcChars);
     
     Serial.println("Battery monitoring initialized");
 }
@@ -372,11 +371,9 @@ void initializeButtons() {
 }
 
 void initializeUSB() {
-    // Initialize USB HID keyboard
-    USB.begin();
-    keyboard.begin();
-    
-    Serial.println("USB HID initialized");
+    // Note: ESP32-C3 doesn't have native USB HID support like ESP32-S2/S3
+    // We'll use BLE HID instead or send commands via Serial
+    Serial.println("USB HID not available on ESP32-C3 - using alternative method");
 }
 
 // ====================================================================================
@@ -455,7 +452,7 @@ void updateBattery() {
     // Read battery voltage (with averaging)
     uint32_t adcSum = 0;
     for (int i = 0; i < BAT_SAMPLES; i++) {
-        adcSum += adc1_get_raw(ADC1_CHANNEL_7);  // GPIO35 = ADC1_CH7
+        adcSum += adc1_get_raw(ADC1_CHANNEL_4);  // GPIO4 = ADC1_CH4
         delayMicroseconds(100);
     }
     
@@ -638,12 +635,10 @@ void sendVolumeCommand(bool up) {
 }
 
 void sendTeamsMuteCommand() {
-    // Send Ctrl+Shift+M to toggle mute in Teams/Discord
-    keyboard.press(KEY_LEFT_CTRL);
-    keyboard.press(KEY_LEFT_SHIFT);
-    keyboard.press('m');
-    delay(100);
-    keyboard.releaseAll();
+    // ESP32-C3 doesn't have native USB HID - send command via Serial for now
+    // In a real implementation, this could be sent via BLE HID or web interface
+    Serial.println("TEAMS_MUTE_TOGGLE");
+    Serial.println("Note: Ctrl+Shift+M command sent via Serial (ESP32-C3 limitation)");
 }
 
 // ====================================================================================

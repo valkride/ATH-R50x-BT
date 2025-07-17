@@ -27,34 +27,34 @@
 // ====================================================================================
 
 // I2C OLED Display
-#define PIN_OLED_SDA            21  // GPIO21 - SDA
-#define PIN_OLED_SCL            22  // GPIO22 - SCL
+#define PIN_OLED_SDA            8   // GPIO8 - SDA
+#define PIN_OLED_SCL            9   // GPIO9 - SCL
 
 // ADC and Status Monitoring
-#define PIN_BAT_ADC             35  // GPIO35 - Battery voltage divider (ADC1_CH7)
-#define PIN_STAT                34  // GPIO34 - TP4056 STAT line from right cup
-#define PIN_TEMP_SENSOR         20  // GPIO20 - Optional temperature sensor
+#define PIN_BAT_ADC             4   // GPIO4 - Battery voltage divider (ADC1_CH4)
+#define PIN_STAT                3   // GPIO3 - TP4056 STAT line from right cup
+#define PIN_TEMP_SENSOR         2   // GPIO2 - Optional temperature sensor
 
 // Power Control
-#define PIN_EN_AUDIO            25  // GPIO25 - Enable QCC5124 + TPA6120A2 LDO
-#define PIN_EN_MIC              26  // GPIO26 - Enable mic module in right cup (P-MOSFET gate)
-#define PIN_EN_USB              21  // GPIO21 - USB power enable (optional)
+#define PIN_EN_AUDIO            10  // GPIO10 - Enable QCC5124 + TPA6120A2 LDO
+#define PIN_EN_MIC              18  // GPIO18 - Enable mic module in right cup (P-MOSFET gate)
+#define PIN_EN_USB              19  // GPIO19 - USB power enable (optional)
 
 // User Interface - Buttons (active low with internal pullup)
-#define PIN_BTN_PWR             27  // GPIO27 - Power button
-#define PIN_BTN_VOL_UP          14  // GPIO14 - Volume up button
-#define PIN_BTN_VOL_DN          12  // GPIO12 - Volume down button
-#define PIN_BTN_MUTE            13  // GPIO13 - Mute button
+#define PIN_BTN_PWR             20  // GPIO20 - Power button
+#define PIN_BTN_VOL_UP          21  // GPIO21 - Volume up button
+#define PIN_BTN_VOL_DN          0   // GPIO0 - Volume down button
+#define PIN_BTN_MUTE            1   // GPIO1 - Mute button
 
 // QCC5124 A2DP Codec Control
-#define PIN_QCC_TX              10  // GPIO10 - UART TX to QCC5124
-#define PIN_QCC_RX              9   // GPIO9 - UART RX from QCC5124
+#define PIN_QCC_TX              6   // GPIO6 - UART TX to QCC5124
+#define PIN_QCC_RX              7   // GPIO7 - UART RX from QCC5124
 #define PIN_QCC_RST             2   // GPIO2 - QCC5124 Reset
 
 // I2S Microphone Input (for VAD and audio processing)
-#define PIN_I2S_WS              18  // GPIO18 - I2S Word Select
-#define PIN_I2S_SCK             19  // GPIO19 - I2S Serial Clock
-#define PIN_I2S_SD              23  // GPIO23 - I2S Serial Data
+#define PIN_I2S_WS              6   // GPIO6 - I2S Word Select
+#define PIN_I2S_SCK             7   // GPIO7 - I2S Serial Clock
+#define PIN_I2S_SD              5   // GPIO5 - I2S Serial Data
 
 // Status LEDs (optional)
 #define PIN_LED_STATUS          8   // GPIO8 - Status LED
