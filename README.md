@@ -72,12 +72,22 @@ A complete Arduino-style C++ firmware for ESP32-C3 SuperMini based split-cup Blu
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Method 1: Download Pre-built Firmware (Recommended)
+[![Build Status](https://github.com/YourUsername/esp32-c3-bluetooth-headset/workflows/Build%20and%20Release%20Firmware/badge.svg)](https://github.com/YourUsername/esp32-c3-bluetooth-headset/actions)
+
+1. **Download**: Get the latest firmware from [Releases](https://github.com/YourUsername/esp32-c3-bluetooth-headset/releases)
+2. **Flash**: Use `flash_firmware.bat` (Windows) or `flash_firmware.sh` (Linux/Mac)
+3. **Pair**: Connect via Bluetooth to your device
+4. **Enjoy**: High-quality audio with full headset controls
+
+### Method 2: Build from Source
+
+#### Prerequisites
 - [PlatformIO](https://platformio.org/) installed
 - ESP32-C3 SuperMini development board
 - Hardware assembled according to pin configuration
 
-### Installation
+#### Installation
 
 1. **Clone the repository:**
 ```bash
@@ -99,6 +109,13 @@ pio run --target upload
 ```bash
 pio device monitor
 ```
+
+### 🔧 Automated Building
+- **Releases**: Stable firmware builds with each tagged release
+- **Nightly**: Latest features from main branch (may be unstable)
+- **CI/CD**: Automated building, testing, and deployment via GitHub Actions
+
+For detailed build instructions, see [BUILD_GUIDE.md](docs/BUILD_GUIDE.md)
 
 ## 📱 Usage
 
