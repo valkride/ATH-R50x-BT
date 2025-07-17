@@ -1,0 +1,135 @@
+# PlatformIO
+.pio/
+.vscode/
+.pioenvs/
+.piolibdeps/
+.pio/build/
+.pio/libdeps/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.backup
+
+# Build artifacts
+firmware.bin
+firmware.elf
+*.map
+*.sym
+
+# Documentation build
+docs/_build/
+docs/doxygen/
+
+# Test results
+test_report.xml
+coverage.xml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Cache directories
+.cache/
+.npm/
+.yarn/
+
+# Lock files (optional - depends on team preference)
+package-lock.json
+yarn.lock
+
+# Hardware-specific files
+*.fzz
+*.fzpz
+*.sch
+*.pcb
+*.gbr
+*.drl
+
+# Simulation files
+*.sim
+*.spice
+
+# CAD files
+*.dwg
+*.dxf
+*.step
+*.stp
+
+# Audio files (if any test files)
+*.wav
+*.mp3
+*.aac
+*.flac
+
+# Configuration overrides
+config_local.h
+secrets.h
+
+# Backup files
+*.orig
+*.rej

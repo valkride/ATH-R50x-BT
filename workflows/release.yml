@@ -1,0 +1,162 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+        
+    - name: Build firmware
+      run: |
+        cd Build
+        pio run
+        
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Create firmware package
+      run: |
+        mkdir -p release
+        cp Build/.pio/build/esp32-c3-supermini/firmware.bin release/ATH-R50x-firmware-${{ steps.get_version.outputs.VERSION }}.bin
+        cp Build/.pio/build/esp32-c3-supermini/firmware.elf release/ATH-R50x-firmware-${{ steps.get_version.outputs.VERSION }}.elf
+        cp Build/.pio/build/esp32-c3-supermini/partitions.bin release/partitions.bin
+        cp Build/.pio/build/esp32-c3-supermini/bootloader.bin release/bootloader.bin
+        
+    - name: Generate flash script
+      run: |
+        cat > release/flash.bat << 'EOF'
+        @echo off
+        echo Flashing ATH-R50x Bluetooth Headset Firmware
+        echo ============================================
+        echo.
+        echo Make sure your ESP32-C3 is connected via USB-C
+        echo Press any key to continue...
+        pause >nul
+        
+        esptool.py --chip esp32c3 --port COM3 --baud 921600 write_flash ^
+          0x0000 bootloader.bin ^
+          0x8000 partitions.bin ^
+          0x10000 ATH-R50x-firmware-${{ steps.get_version.outputs.VERSION }}.bin
+        
+        echo.
+        echo Firmware flashed successfully!
+        echo You can now disconnect and test your headset.
+        pause
+        EOF
+        
+    - name: Generate flash script (Linux/Mac)
+      run: |
+        cat > release/flash.sh << 'EOF'
+        #!/bin/bash
+        echo "Flashing ATH-R50x Bluetooth Headset Firmware"
+        echo "============================================"
+        echo ""
+        echo "Make sure your ESP32-C3 is connected via USB-C"
+        read -p "Press Enter to continue..."
+        
+        # Try to auto-detect port
+        if [ -e /dev/ttyUSB0 ]; then
+          PORT=/dev/ttyUSB0
+        elif [ -e /dev/ttyACM0 ]; then
+          PORT=/dev/ttyACM0
+        else
+          echo "Could not auto-detect port. Please specify:"
+          read -p "Enter port (e.g., /dev/ttyUSB0): " PORT
+        fi
+        
+        esptool.py --chip esp32c3 --port $PORT --baud 921600 write_flash \
+          0x0000 bootloader.bin \
+          0x8000 partitions.bin \
+          0x10000 ATH-R50x-firmware-${{ steps.get_version.outputs.VERSION }}.bin
+        
+        echo ""
+        echo "Firmware flashed successfully!"
+        echo "You can now disconnect and test your headset."
+        EOF
+        chmod +x release/flash.sh
+        
+    - name: Create README for release
+      run: |
+        cat > release/README.md << 'EOF'
+        # ATH-R50x Bluetooth Headset Firmware ${{ steps.get_version.outputs.VERSION }}
+        
+        ## Files Included
+        - `ATH-R50x-firmware-${{ steps.get_version.outputs.VERSION }}.bin` - Main firmware binary
+        - `ATH-R50x-firmware-${{ steps.get_version.outputs.VERSION }}.elf` - ELF file with debug symbols
+        - `bootloader.bin` - ESP32-C3 bootloader
+        - `partitions.bin` - Partition table
+        - `flash.bat` - Windows flashing script
+        - `flash.sh` - Linux/Mac flashing script
+        
+        ## Prerequisites
+        - ESP32-C3 SuperMini board
+        - USB-C cable
+        - esptool.py installed (`pip install esptool`)
+        
+        ## Quick Flash (Windows)
+        1. Connect ESP32-C3 via USB-C
+        2. Double-click `flash.bat`
+        3. Follow the prompts
+        
+        ## Quick Flash (Linux/Mac)
+        1. Connect ESP32-C3 via USB-C
+        2. Run `./flash.sh`
+        3. Follow the prompts
+        
+        ## Manual Flash
+        ```bash
+        esptool.py --chip esp32c3 --port COM3 --baud 921600 write_flash \
+          0x0000 bootloader.bin \
+          0x8000 partitions.bin \
+          0x10000 ATH-R50x-firmware-${{ steps.get_version.outputs.VERSION }}.bin
+        ```
+        
+        ## Hardware Setup
+        See the main repository README for detailed hardware connection instructions.
+        EOF
+        
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release/*
+        body: |
+          ## ATH-R50x Bluetooth Headset Firmware ${{ steps.get_version.outputs.VERSION }}
+          
+          ### Features
+          - Bluetooth 5.0 with A2DP, HFP, AVRCP support
+          - High-quality I2S audio output
+          - Touch/button controls
+          - Battery monitoring
+          - OLED display support
+          - Low power consumption
+          
+          ### Installation
+          1. Download the release package
+          2. Extract all files
+          3. Run the appropriate flash script for your OS
+          4. Follow the hardware setup guide in the main repository
+          
+          ### Changes
+          See CHANGELOG.md for detailed changes in this version.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

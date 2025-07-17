@@ -1,0 +1,131 @@
+# ESP32-C3 Bluetooth Headset Module Configuration
+
+menu "Bluetooth Headset Configuration"
+    
+    config BT_HEADSET_DEVICE_NAME
+        string "Bluetooth device name"
+        default "ATH-R50x BT Module"
+        help
+            Name that will appear when scanning for Bluetooth devices
+    
+    config BT_HEADSET_PIN_CODE
+        string "Bluetooth PIN code"
+        default "0000"
+        help
+            PIN code for pairing (4 digits)
+    
+    config BT_HEADSET_AUTO_RECONNECT
+        bool "Auto-reconnect to last device"
+        default y
+        help
+            Automatically connect to the last paired device on startup
+    
+    menu "Audio Configuration"
+        
+        config AUDIO_SAMPLE_RATE
+            int "Audio sample rate"
+            default 44100
+            help
+                Sample rate in Hz (44100, 48000, etc.)
+        
+        config AUDIO_BITS_PER_SAMPLE
+            int "Audio bits per sample"
+            default 16
+            help
+                Bits per sample (16, 24, 32)
+        
+        config AUDIO_CHANNELS
+            int "Audio channels"
+            default 2
+            help
+                Number of audio channels (1=mono, 2=stereo)
+        
+        config AUDIO_BUFFER_SIZE
+            int "Audio buffer size"
+            default 1024
+            help
+                Size of audio buffer in samples
+    
+    endmenu
+    
+    menu "GPIO Configuration"
+        
+        config GPIO_I2S_BCK
+            int "I2S BCK (bit clock) GPIO"
+            default 4
+            help
+                GPIO pin for I2S bit clock
+        
+        config GPIO_I2S_WS
+            int "I2S WS (word select) GPIO"
+            default 5
+            help
+                GPIO pin for I2S word select
+        
+        config GPIO_I2S_DATA
+            int "I2S DATA GPIO"
+            default 6
+            help
+                GPIO pin for I2S data output
+        
+        config GPIO_BUTTON_PLAY
+            int "Play/Pause button GPIO"
+            default 0
+            help
+                GPIO pin for play/pause button
+        
+        config GPIO_BUTTON_VOL_UP
+            int "Volume up button GPIO"
+            default 1
+            help
+                GPIO pin for volume up button
+        
+        config GPIO_BUTTON_VOL_DOWN
+            int "Volume down button GPIO"
+            default 2
+            help
+                GPIO pin for volume down button
+        
+        config GPIO_LED_STATUS
+            int "Status LED GPIO"
+            default 8
+            help
+                GPIO pin for status LED
+        
+        config GPIO_BATTERY_ADC
+            int "Battery ADC GPIO"
+            default 3
+            help
+                GPIO pin for battery voltage monitoring
+    
+    endmenu
+    
+    menu "Power Management"
+        
+        config POWER_SLEEP_TIMEOUT
+            int "Sleep timeout (seconds)"
+            default 300
+            help
+                Time in seconds before entering deep sleep
+        
+        config POWER_LOW_BATTERY_THRESHOLD
+            int "Low battery threshold (mV)"
+            default 3400
+            help
+                Voltage threshold for low battery warning
+        
+        config POWER_SHUTDOWN_THRESHOLD
+            int "Shutdown threshold (mV)"
+            default 3200
+            help
+                Voltage threshold for automatic shutdown
+        
+        config POWER_BATTERY_CHECK_INTERVAL
+            int "Battery check interval (seconds)"
+            default 30
+            help
+                Interval for battery voltage monitoring
+    
+    endmenu
+
+endmenu
