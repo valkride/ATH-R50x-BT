@@ -1,12 +1,15 @@
 /**
  * ESP32-C3 Bluetooth Headset Firmware
- * Complete implementation with audio processing
+ * BLE-based implementation (ESP32-C3 compatible)
  */
 
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
-#include <BluetoothA2DPSink.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 #include <USB.h>
 #include <USBHIDKeyboard.h>
 
@@ -30,8 +33,9 @@
 #define SCREEN_HEIGHT 32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-// Bluetooth Audio
-BluetoothA2DPSink a2dp_sink;
+// BLE HID and Control
+BLEServer* pServer = nullptr;
+BLECharacteristic* pCharacteristic = nullptr;
 USBHIDKeyboard keyboard;
 
 // State
@@ -58,14 +62,25 @@ uint8_t historyIndex = 0;
 void sendQCCCommand(uint8_t cmd, uint8_t data = 0);
 void initQCC5124();
 
-// Audio callbacks
-void avrc_metadata_callback(uint8_t data1, const uint8_t *data2);
-void audio_data_callback(const uint8_t *data, uint32_t length);
+// BLE Callbacks
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+        connected = true;
+        Serial.println("BLE Client Connected");
+    }
+    
+    void onDisconnect(BLEServer* pServer) {
+        connected = false;
+        Serial.println("BLE Client Disconnected");
+        pServer->startAdvertising(); // Restart advertising
+    }
+};
 
 // Voice Activity Detection
 float calculateEnergy(float* buffer, int size);
 bool detectVoice();
 void processAudio();
+void initBLE();
 
 // Button debouncing
 unsigned long lastButtonPress[4] = {0, 0, 0, 0};
@@ -110,15 +125,13 @@ void setup() {
     // Initialize UART for QCC5124
     Serial1.begin(115200, SERIAL_8N1, PIN_QCC_UART_RX, PIN_QCC_UART_TX);
     
-    // Initialize Bluetooth A2DP
-    a2dp_sink.set_avrc_metadata_callback(avrc_metadata_callback);
-    a2dp_sink.set_stream_reader(audio_data_callback);
-    a2dp_sink.start("ESP32-Headset");
+    // Initialize BLE
+    initBLE();
     
     // Initialize QCC5124
     initQCC5124();
     
-    Serial.println("Bluetooth Headset Ready");
+    Serial.println("BLE Headset Controller Ready");
 }
 
 void loop() {
@@ -126,6 +139,7 @@ void loop() {
     updateBattery();
     updateCharging();
     processAudio();
+    processBLECommand();
     updateDisplay();
     delay(10);
 }
@@ -343,20 +357,41 @@ void processAudio() {
     }
 }
 
-// Bluetooth Audio Callbacks
-void avrc_metadata_callback(uint8_t data1, const uint8_t *data2) {
-    Serial.printf("AVRC metadata: %d, %s\n", data1, data2);
-    connected = true;
+// BLE Initialization
+void initBLE() {
+    BLEDevice::init("ESP32-C3-Headset");
+    pServer = BLEDevice::createServer();
+    pServer->setCallbacks(new MyServerCallbacks());
+    
+    // Create BLE service for headset control
+    BLEService *pService = pServer->createService("12345678-1234-1234-1234-123456789abc");
+    
+    // Create characteristic for volume/control commands
+    pCharacteristic = pService->createCharacteristic(
+        "87654321-4321-4321-4321-cba987654321",
+        BLECharacteristic::PROPERTY_READ |
+        BLECharacteristic::PROPERTY_WRITE |
+        BLECharacteristic::PROPERTY_NOTIFY
+    );
+    
+    pService->start();
+    
+    // Start advertising
+    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+    pAdvertising->addServiceUUID("12345678-1234-1234-1234-123456789abc");
+    pAdvertising->setScanResponse(false);
+    pAdvertising->setMinPreferred(0x0);
+    BLEDevice::startAdvertising();
+    
+    Serial.println("BLE Headset Controller started, waiting for connections...");
 }
 
-void audio_data_callback(const uint8_t *data, uint32_t length) {
-    // Audio data received from Bluetooth
-    // Forward to QCC5124 or process here
-    if (audioEnabled && !muted) {
-        // Process audio data
-        for (uint32_t i = 0; i < length && i < FRAME_SIZE * 2; i += 2) {
-            int16_t sample = (data[i+1] << 8) | data[i];
-            audioBuffer[i/2] = sample / 32768.0f;
-        }
+// Bluetooth Audio Callbacks (Replaced with BLE control)
+void processBLECommand() {
+    if (pCharacteristic && connected) {
+        // Send status updates via BLE
+        String status = String(volume) + "," + String(muted) + "," + String(batteryPercent);
+        pCharacteristic->setValue(status.c_str());
+        pCharacteristic->notify();
     }
 }
