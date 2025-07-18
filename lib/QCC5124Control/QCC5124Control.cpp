@@ -19,6 +19,20 @@ QCC5124Control::QCC5124Control(HardwareSerial* serialPort) {
     i2cAddress = QCC5124_I2C_ADDRESS;
 }
 
+void QCC5124Control::setStatusCallback(void (*callback)(const String&)) {
+    statusCallback = callback;
+}
+
+void QCC5124Control::sendStatusUpdate(const String& message) {
+    if (statusCallback) {
+        statusCallback(message);
+    }
+    // Also send to serial for debugging
+    if (uart) {
+        uart->println("QCC5124: " + message);
+    }
+}
+
 bool QCC5124Control::begin() {
     if (!uart) {
         return false;

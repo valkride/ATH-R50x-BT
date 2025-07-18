@@ -557,3 +557,68 @@ void AudioEffects::processCompressor(float* buffer, uint16_t size) {
         }
     }
 }
+
+void AudioEffects::enableAGC(bool enable) {
+    agcEnabled = enable;
+}
+
+void AudioEffects::setAGCParameters(float target, float attack, float release) {
+    agcTarget = target;
+    agcAttack = attack;
+    agcRelease = release;
+}
+
+void AudioEffects::enableEqualizer(bool enable) {
+    equalizerEnabled = enable;
+}
+
+void AudioEffects::setEQGain(uint8_t band, float gain) {
+    if (band < NUM_FILTERS) {
+        eqGains[band] = gain;
+        // Update coefficients - simplified implementation
+        eqCoeffs[band][0] = gain;
+    }
+}
+
+void AudioEffects::setEQPreset(uint8_t preset) {
+    // Simple EQ presets
+    switch (preset) {
+        case 0: // Flat
+            for (int i = 0; i < NUM_FILTERS; i++) {
+                setEQGain(i, 1.0f);
+            }
+            break;
+        case 1: // Bass boost
+            for (int i = 0; i < NUM_FILTERS / 4; i++) {
+                setEQGain(i, 1.5f);
+            }
+            break;
+        case 2: // Treble boost
+            for (int i = 3 * NUM_FILTERS / 4; i < NUM_FILTERS; i++) {
+                setEQGain(i, 1.5f);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void AudioEffects::enableCompressor(bool enable) {
+    compressorEnabled = enable;
+}
+
+void AudioEffects::setCompressorParameters(float threshold, float ratio, float attack, float release) {
+    compThreshold = threshold;
+    compRatio = ratio;
+    compAttack = attack;
+    compRelease = release;
+}
+
+void AudioEffects::enableLimiter(bool enable) {
+    limiterEnabled = enable;
+}
+
+void AudioEffects::setLimiterThreshold(float threshold) {
+    // This would need to be stored as a member variable
+    // For now, it's hardcoded in the processLimiter function
+}
