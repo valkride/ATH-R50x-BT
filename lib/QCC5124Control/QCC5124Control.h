@@ -82,6 +82,9 @@ private:
     String readResponse(uint32_t timeout = COMMAND_TIMEOUT_MS);
     bool waitForResponse(const String& expected, uint32_t timeout = COMMAND_TIMEOUT_MS);
     
+    // Status callback helper
+    void sendStatusUpdate(const String& message);
+    
 public:
     QCC5124Control(HardwareSerial* serialPort);
     
