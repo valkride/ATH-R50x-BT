@@ -73,7 +73,6 @@ bool detectVoice();
 void processAudio();
 
 // QCC5124 Commands
-void sendQCCCommand(uint8_t cmd, uint8_t data = 0);
 void initQCC5124();
 
 // BLE Callbacks
