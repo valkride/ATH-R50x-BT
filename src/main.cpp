@@ -10,8 +10,6 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include <USB.h>
-#include <USBHIDKeyboard.h>
 
 // Pin definitions (ESP32-C3 compatible)
 #define PIN_OLED_SDA    8
@@ -36,7 +34,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 // BLE HID and Control
 BLEServer* pServer = nullptr;
 BLECharacteristic* pCharacteristic = nullptr;
-USBHIDKeyboard keyboard;
 
 // State
 uint8_t volume = 8;
@@ -57,6 +54,23 @@ bool voiceDetected = false;
 float audioBuffer[FRAME_SIZE];
 float energyHistory[10];
 uint8_t historyIndex = 0;
+
+// Function declarations
+void handleButtons();
+void togglePower();
+void volumeUp();
+void volumeDown();
+void toggleMute();
+void updateBattery();
+void updateCharging();
+void updateDisplay();
+void sendQCCCommand(uint8_t cmd, uint8_t data = 0);
+void initQCC5124();
+void initBLE();
+void processBLECommand();
+float calculateEnergy(float* buffer, int size);
+bool detectVoice();
+void processAudio();
 
 // QCC5124 Commands
 void sendQCCCommand(uint8_t cmd, uint8_t data = 0);
@@ -118,9 +132,9 @@ void setup() {
     display.println("Initializing...");
     display.display();
     
-    // Initialize USB HID
-    USB.begin();
-    keyboard.begin();
+    // Initialize USB HID - Removed (ESP32-C3 compatibility issues)
+    // USB.begin();
+    // keyboard.begin();
     
     // Initialize UART for QCC5124
     Serial1.begin(115200, SERIAL_8N1, PIN_QCC_UART_RX, PIN_QCC_UART_TX);
@@ -215,13 +229,20 @@ void toggleMute() {
     micEnabled = !muted && audioEnabled;
     digitalWrite(PIN_EN_MIC, micEnabled ? HIGH : LOW);
     
-    // Send USB HID mute command (Ctrl+Shift+M for Teams/Discord)
+    // Send USB HID mute command - Alternative via BLE
     if (muted) {
-        keyboard.press(KEY_LEFT_CTRL);
-        keyboard.press(KEY_LEFT_SHIFT);
-        keyboard.press('m');
-        delay(50);
-        keyboard.releaseAll();
+        // Send mute command via BLE instead of USB HID
+        if (pCharacteristic && connected) {
+            pCharacteristic->setValue("MUTE_ON");
+            pCharacteristic->notify();
+        }
+        Serial.println("Sent BLE mute command");
+    } else {
+        if (pCharacteristic && connected) {
+            pCharacteristic->setValue("MUTE_OFF");
+            pCharacteristic->notify();
+        }
+        Serial.println("Sent BLE unmute command");
     }
     
     // Send mute command to QCC5124
